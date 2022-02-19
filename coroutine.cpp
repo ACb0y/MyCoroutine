@@ -9,7 +9,7 @@
 namespace MyCoroutine {
 
 static void CoroutineRun(Schedule * schedule) {
-  char temp[(1024 * 12) - 4 - 8 - 128] = {0};
+  char temp[(1024 * 12) - 4 - 8 - 256] = {0};
   temp[0] = 0;
   std::cout << temp[0] << std::endl;
   int id = schedule->runningCoroutineId;
