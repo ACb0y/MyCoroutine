@@ -9,9 +9,6 @@
 namespace MyCoroutine {
 
 static void CoroutineRun(Schedule * schedule) {
-  char temp[(1024 * 12) - 4 - 8 - 512] = {0};
-  temp[0] = 0;
-  std::cout << temp[0] << std::endl;
   int id = schedule->runningCoroutineId;
   assert(id >= 0 && id < MAX_COROUTINE_SIZE);
 

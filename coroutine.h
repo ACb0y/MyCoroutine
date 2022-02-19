@@ -11,7 +11,7 @@ namespace MyCoroutine {
 
 #define INVALID_ROUTINE_ID    -1
 #define MAX_COROUTINE_SIZE    2048      // 最大创建2048个协程
-#define DEFAULT_STACK_SIZE    12 * 1024 // 12K的调用栈
+#define DEFAULT_STACK_SIZE    10 * 1024 // 10K的调用栈
 
 enum State {
   Idle = 1,
