@@ -16,7 +16,7 @@ void routine3(void * arg) {
 void routine1(void * arg) {
   cout << "routine1 run begin" << endl;
   MyCoroutine::Schedule * schedule = (MyCoroutine::Schedule *)arg;
-  int id3 = MyCoroutine::CoroutineCreate(schedule, routine3, &schedule);
+  int id3 = MyCoroutine::CoroutineCreate(schedule, routine3, schedule);
   cout << "id3 = " << id3 << endl;
   cout << "routine1 run end" << endl;
 }
