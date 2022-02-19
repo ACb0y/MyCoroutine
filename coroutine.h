@@ -12,15 +12,14 @@
 
 namespace MyCoroutine {
 
-#define INVALID_RUNNING_INDEX -1
+#define INVALID_ROUTINE_ID    -1
 #define MAX_COROUTINE_SIZE    2048      // 最大创建2048个协程
 #define DEFAULT_STACK_SIZE    12 * 1024 // 12K的调用栈
 
 enum State {
   Idle = 1,
-  Ready = 2,
-  Running = 3,
-  Suspend = 4,
+  Running = 2,
+  Suspend = 3,
 };
 
 // 协程入口函数
@@ -38,20 +37,13 @@ typedef struct Coroutine {
 // 协程调度
 typedef struct Schedule {
   ucontext_t main;
-  int32_t runningIndex;
-  std::vector<Coroutine *> coroutines;
+  int32_t runningCoroutineId;
+  Coroutine coroutines[MAX_COROUTINE_SIZE];
 
   Schedule() {
     runningIndex = INVALID_RUNNING_INDEX;
     for (int i = 0; i < MAX_COROUTINE_SIZE; i++) {
-      Coroutine * routine = new Coroutine;
-      routine->state = Idle;
-      coroutines.push_back(routine);
-    }
-  }
-  ~Schedule() {
-    for (int i = 0; i < MAX_COROUTINE_SIZE; i++) {
-      delete coroutines[i];
+      coroutines[i].state = Idle;
     }
   }
 }Schedule;

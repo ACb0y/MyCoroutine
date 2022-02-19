@@ -7,26 +7,30 @@
 
 namespace MyCoroutine {
 
-static void CoroutineInit(Schedule & schedule, Coroutine * routine, Entry entry, void * arg) {
-  routine->state = Ready;
-  routine->entry = entry;
-  routine->arg = arg;
-  getcontext(&(routine->ctx));
-  routine->ctx.uc_stack.ss_sp = routine->stack;
-  routine->ctx.uc_stack.ss_size = DEFAULT_STACK_SIZE;
-  routine->ctx.uc_stack.ss_flags = 0;
-  routine->ctx.uc_link = &(schedule.main);
+static void CoroutineRun(Schedule * schedule) {
+  int id = schedule->runningCoroutineId;
+  assert(id >= 0 && id < MAX_COROUTINE_SIZE);
+
+  Coroutine * routine = &schedule->coroutines[id];
+  // 执行entry函数
+  routine->entry(routine->arg);
+  // entry函数执行完之后，才能把协程状态更新为idle，并标记
+  routine->state = Idle;
+  schedule->runningCoroutineId = INVALID_ROUTINE_ID;
+  // 这个函数执行完，调用栈会回到主协程中，执行routine->ctx.uc_link指向的上下文的下一条指令
 }
 
-static void CoroutineRun(Schedule * schedule) {
-  int id = schedule->runningIndex;
-  assert(id >= 0 && id < MAX_COROUTINE_SIZE);
-  Coroutine * routine = schedule->coroutines[id];
-  assert(routine != NULL);
-  routine->entry(routine->arg);
-  routine->state = Idle;
-  schedule->runningIndex = INVALID_RUNNING_INDEX;
-  // 这个函数执行完，调用栈会回到主协程中
+static void CoroutineInit(Schedule & schedule, Coroutine * routine, Entry entry, void * arg) {
+  routine->arg = arg;
+  routine->entry = entry;
+  routine->state = Running;
+  getcontext(&(routine->ctx));
+  routine->ctx.uc_stack.ss_flags = 0;
+  routine->ctx.uc_stack.ss_sp = routine->stack;
+  routine->ctx.uc_stack.ss_size = DEFAULT_STACK_SIZE;
+  routine->ctx.uc_link = &(schedule.main);
+  // 设置routine->ctx上下文要执行的函数和对应的参数
+  makecontext(&(routine->ctx), (void (*)(void))(CoroutineRun), 1, &schedule);
 }
 
 int CoroutineCreate(Schedule & schedule, Entry entry, void * arg) {
@@ -37,37 +41,39 @@ int CoroutineCreate(Schedule & schedule, Entry entry, void * arg) {
     }
   }
   if (id >= MAX_COROUTINE_SIZE) {
-    return INVALID_RUNNING_INDEX;
+    return INVALID_ROUTINE_ID;
   }
-  schedule.runningIndex = id;
-  Coroutine * routine = schedule.coroutines[id];
+  schedule.runningCoroutineId = id;
+  Coroutine * routine = &schedule.coroutines[id];
   CoroutineInit(schedule, routine, entry, arg);
-
-  makecontext(&(routine->ctx), (void (*)(void))(CoroutineRun), 1, &schedule);
-  // 切换到刚创建的协程中运行
+  // 切换到刚创建的协程中运行，并把当前执行上下文保持到schedule.main中，
+  // 当从协程执行结束或者从协程主动yield时，swapcontext才会返回。
   swapcontext(&(schedule.main), &(routine->ctx));
   return id;
 }
 
 void CoroutineYield(Schedule & schedule) {
   assert(schedule.runningIndex >= 0 && schedule.runningIndex < MAX_COROUTINE_SIZE);
-  Coroutine * routine = schedule.coroutines[schedule.runningIndex];
+
+  Coroutine * routine = &schedule.coroutines[schedule.runningCoroutineId];
+  // 更新当前的从协程状态为挂起
   routine->state = Suspend;
-  // 当前协程让出执行权，执行权回到主协程中，主协程再做调度
-  schedule.runningIndex = INVALID_RUNNING_INDEX;
-  // 切换到主协程的上下文中执行，swapcontext调用不会返回
-  assert(swapcontext(&routine->ctx, &(schedule.main)) == 0);
+  schedule.runningCoroutineId = INVALID_ROUTINE_ID;
+  // 当前的从协程让出执行权，并把当前的从协程的执行上下文保存到routine->ctx中，
+  // 执行权回到主协程中，主协程再做调度，当从协程被主协程resume时，swapcontext才会返回。
+  swapcontext(&routine->ctx, &(schedule.main));
 }
 
 void CoroutineResume(Schedule & schedule, int id) {
   assert(id >= 0 && id < MAX_COROUTINE_SIZE);
-  Coroutine * routine = schedule.coroutines[id];
-  assert(routine != NULL);
-  // 挂起状态的协程调用才生效，执行栈切换到对应id的协程中，并把当前调用栈信息保存到schedule.main当中
+
+  Coroutine * routine = &schedule.coroutines[id];
+  // 挂起状态的协程调用才生效
   if (routine->state == Suspend) {
-    schedule.runningIndex = id;
-    // 从主协程切换到协程编号为id的协程中执行，swapcontext调用不会返回
-    assert(swapcontext(&schedule.main, &routine->ctx) == 0);
+    schedule.runningCoroutineId = id;
+    // 从主协程切换到协程编号为id的协程中执行，并把当前执行上下文保存到schedule.main中，
+    // 当从协程执行结束或者从协程主动yield时，swapcontext才会返回。
+    swapcontext(&schedule.main, &routine->ctx);
   }
 }
 

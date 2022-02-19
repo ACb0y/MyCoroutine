@@ -10,12 +10,16 @@ void routine1(void * arg) {
   cout << "routine1 run begin" << endl;
   MyCoroutine::Schedule * schedule = (MyCoroutine::Schedule *)arg;
   MyCoroutine::CoroutineYield(*schedule);
+  cout << "routine1 running" << endl;
+  MyCoroutine::CoroutineYield(*schedule);
   cout << "routine1 run end" << endl;
 }
 
 void routine2(void * arg) {
   cout << "routine2 run begin" << endl;
   MyCoroutine::Schedule * schedule = (MyCoroutine::Schedule *)arg;
+  MyCoroutine::CoroutineYield(*schedule);
+  cout << "routine2 running" << endl;
   MyCoroutine::CoroutineYield(*schedule);
   cout << "routine2 run end" << endl;
 }
