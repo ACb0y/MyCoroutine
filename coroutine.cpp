@@ -6,7 +6,7 @@
 
 namespace MyCoroutine {
 
-static void CoroutineInit(Schedule & schedule, Coroutine * routine, Entry entry, void * arg) {
+static void CoroutineInit(Schedule * schedule, Coroutine * routine, Entry entry, void * arg) {
   routine->state = Ready;
   routine->entry = entry;
   routine->arg = arg;
@@ -14,7 +14,7 @@ static void CoroutineInit(Schedule & schedule, Coroutine * routine, Entry entry,
   routine->ctx.uc_stack.ss_sp = routine->stack;
   routine->ctx.uc_stack.ss_size = DEFAULT_STACK_SIZE;
   routine->ctx.uc_stack.ss_flags = 0;
-  routine->ctx.uc_link = &(schedule.main);
+  routine->ctx.uc_link = &(schedule->main);
 }
 
 static void ScheduleCore(Schedule * schedule) {
@@ -28,11 +28,13 @@ static void ScheduleCore(Schedule * schedule) {
   // 这个函数执行完，调用栈会回到主协程中
 }
 
-int CoroutineCreate(Schedule & schedule, Entry entry, void * arg) {
+int CoroutineCreate(Schedule * schedule, Entry entry, void * arg) {
   int id = 0;
+  std::cout << "dddd, size=" << schedule->coroutines.size() << std::endl;
   for (id = 0; id < MAX_COROUTINE_SIZE; id++) {
-    std::cout << "aa" << schedule.coroutines[id] << std::endl;
-    if (schedule.coroutines[id]->state == Idle) {
+    std::cout << "ddd1," << schedule->coroutines.size() << std::endl;
+    std::cout << "aa" << schedule->coroutines[id] << std::endl;
+    if (schedule->coroutines[id]->state == Idle) {
       std::cout << "bb" << std::endl;
       break;
     }
@@ -41,15 +43,15 @@ int CoroutineCreate(Schedule & schedule, Entry entry, void * arg) {
   if (id >= MAX_COROUTINE_SIZE) {
     return INVALID_RUNNING_INDEX;
   }
-  schedule.runningIndex = id;
-  Coroutine * routine = schedule.coroutines[id];
+  schedule->runningIndex = id;
+  Coroutine * routine = schedule->coroutines[id];
   CoroutineInit(schedule, routine, entry, arg);
 
   std::cout << "b" << std::endl;
   makecontext(&(routine->ctx), (void (*)(void))(ScheduleCore), 1, &schedule);
   // 切换到刚创建的协程中运行
   std::cout << "c" << std::endl;
-  swapcontext(&(schedule.main), &(routine->ctx));
+  swapcontext(&(schedule->main), &(routine->ctx));
   return id;
 }
 

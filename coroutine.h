@@ -9,7 +9,7 @@
 #endif
 
 #include <ucontext.h>
-#include <array>
+#include <vector>
 #include <iostream>
 
 namespace MyCoroutine {
@@ -41,15 +41,17 @@ typedef struct Coroutine {
 typedef struct Schedule {
   ucontext_t main;
   int32_t runningIndex;
-  std::array<Coroutine *, MAX_COROUTINE_SIZE> coroutines;
+  std::vector<Coroutine *> coroutines;
 
   Schedule() {
     runningIndex = INVALID_RUNNING_INDEX;
     for (int i = 0; i < MAX_COROUTINE_SIZE; i++) {
-      coroutines[i] = new Coroutine;
-      coroutines[i]->state = Idle;
+      Coroutine * routine = new Coroutine;
+      routine->state = Idle;
+      coroutines.push_back(routine);
+      std::cout << "test" << std::endl;
     }
-    std::cout << "test1" << std::endl;
+    std::cout << "test1, size = " << coroutines.size() << std::endl;
   }
   ~Schedule() {
     for (int i = 0; i < MAX_COROUTINE_SIZE; i++) {
@@ -58,7 +60,7 @@ typedef struct Schedule {
   }
 }Schedule;
 
-int CoroutineCreate(Schedule & schedule, Entry entry, void * arg);
+int CoroutineCreate(Schedule * schedule, Entry entry, void * arg);
 void CoroutineYield(Schedule & schedule);
 void CoroutineResume(Schedule & schedule, int id);
 bool ScheduleRunning(Schedule & schedule);

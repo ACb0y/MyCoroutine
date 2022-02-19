@@ -14,10 +14,10 @@ endif
 
 #======================== 自定义设置部分 开始 ========================#
 # c编译选项
-CFLAGS = -g -O2 -Wall -Werror -pipe -m64
+CFLAGS = -g -Wall -Werror -pipe
 
 # c++编译选项
-CXXFLAGS = -g -O2 -Wall -pipe -m64 -std=c++11
+CXXFLAGS = -g -Wall -pipe -std=c++11
 
 # 连接选项
 LDFLAGS =
