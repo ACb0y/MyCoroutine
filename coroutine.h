@@ -17,7 +17,7 @@ namespace MyCoroutine {
 
 enum State {
   Idle = 1,
-  Running = 2,
+  Run = 2,
   Suspend = 3,
 };
 
@@ -33,7 +33,7 @@ typedef struct Coroutine {
   State state;
 }Coroutine;
 
-// 协程调度
+// 协程调度器
 typedef struct Schedule {
   ucontext_t main;
   int32_t runningCoroutineId;
@@ -48,9 +48,13 @@ typedef struct Schedule {
   }
 }Schedule;
 
+// 创建协程并运行，只能在主协程中调用
 int CoroutineCreate(Schedule & schedule, Entry entry, void * arg);
+// 让出执行权，只能在从协程中调用
 void CoroutineYield(Schedule & schedule);
-void CoroutineResume(Schedule & schedule, int id);
+// 恢复从协程的调用，只能在主协程中调用
+void CoroutineResume(Schedule & schedule, int id = INVALID_ROUTINE_ID);
+// 判断是否还有协程在运行
 bool ScheduleRunning(Schedule & schedule);
 
 }
