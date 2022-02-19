@@ -4,10 +4,8 @@
 
 #pragma once
 
-#include <ucontext.h>
 #include <stdint.h>
-#include <vector>
-#include <iostream>
+#include <ucontext.h>
 
 namespace MyCoroutine {
 
@@ -26,18 +24,18 @@ typedef void(*Entry)(void * arg);
 
 // 协程结构体
 typedef struct Coroutine {
-  ucontext_t ctx;
-  Entry entry;
-  void * arg;
-  uint8_t stack[DEFAULT_STACK_SIZE];
   State state;
+  void * arg;
+  Entry entry;
+  ucontext_t ctx;
+  uint8_t stack[DEFAULT_STACK_SIZE];
 }Coroutine;
 
 // 协程调度器
 typedef struct Schedule {
-  ucontext_t main;
-  int32_t runningCoroutineId;
-  Coroutine * coroutines[MAX_COROUTINE_SIZE];
+  ucontext_t main;                            // 用于保存主协程的上下文
+  int32_t runningCoroutineId;                 // 运行中（Run + Suspend）的从协程的id
+  Coroutine * coroutines[MAX_COROUTINE_SIZE]; // 从协程数组池
 
   Schedule() {
     runningCoroutineId = INVALID_ROUTINE_ID;

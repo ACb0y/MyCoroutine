@@ -29,7 +29,10 @@ static void CoroutineInit(Schedule & schedule, Coroutine * routine, Entry entry,
   routine->ctx.uc_stack.ss_sp = routine->stack;
   routine->ctx.uc_stack.ss_size = DEFAULT_STACK_SIZE;
   routine->ctx.uc_link = &(schedule.main);
-  // 设置routine->ctx上下文要执行的函数和对应的参数
+  // 设置routine->ctx上下文要执行的函数和对应的参数，
+  // 这里没有直接使用entry和arg设置，而是多包了一层CoroutineRun函数的调用，
+  // 是为了在CoroutineRun中更新从协程的状态为Idle，并更新当前处于运行中的从协程id为无效id，
+  // 这样这些逻辑就可以对上层调用透明。
   makecontext(&(routine->ctx), (void (*)(void))(CoroutineRun), 1, &schedule);
 }
 
