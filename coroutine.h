@@ -37,15 +37,13 @@ typedef struct Coroutine {
 typedef struct Schedule {
   ucontext_t main;
   int32_t runningCoroutineId;
-  Coroutine coroutines[MAX_COROUTINE_SIZE];
+  Coroutine * coroutines[MAX_COROUTINE_SIZE];
 
   Schedule() {
-    std::cout << "test" << std::endl;
     runningCoroutineId = INVALID_ROUTINE_ID;
-    std::cout << "test" << std::endl;
     for (int i = 0; i < MAX_COROUTINE_SIZE; i++) {
-      std::cout << "a" << std::endl;
-      coroutines[i].state = Idle;
+      coroutines[i] = new Coroutine;
+      coroutines[i]->state = Idle;
     }
   }
 }Schedule;

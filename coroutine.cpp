@@ -11,7 +11,7 @@ static void CoroutineRun(Schedule * schedule) {
   int id = schedule->runningCoroutineId;
   assert(id >= 0 && id < MAX_COROUTINE_SIZE);
 
-  Coroutine * routine = &schedule->coroutines[id];
+  Coroutine * routine = schedule->coroutines[id];
   // 执行entry函数
   routine->entry(routine->arg);
   // entry函数执行完之后，才能把协程状态更新为idle，并标记
@@ -36,7 +36,7 @@ static void CoroutineInit(Schedule & schedule, Coroutine * routine, Entry entry,
 int CoroutineCreate(Schedule & schedule, Entry entry, void * arg) {
   int id = 0;
   for (id = 0; id < MAX_COROUTINE_SIZE; id++) {
-    if (schedule.coroutines[id].state == Idle) {
+    if (schedule.coroutines[id]->state == Idle) {
       break;
     }
   }
@@ -44,7 +44,7 @@ int CoroutineCreate(Schedule & schedule, Entry entry, void * arg) {
     return INVALID_ROUTINE_ID;
   }
   schedule.runningCoroutineId = id;
-  Coroutine * routine = &schedule.coroutines[id];
+  Coroutine * routine = schedule.coroutines[id];
   CoroutineInit(schedule, routine, entry, arg);
   // 切换到刚创建的协程中运行，并把当前执行上下文保持到schedule.main中，
   // 当从协程执行结束或者从协程主动yield时，swapcontext才会返回。
@@ -56,7 +56,7 @@ void CoroutineYield(Schedule & schedule) {
   int id = schedule.runningCoroutineId;
   assert(id >= 0 && id < MAX_COROUTINE_SIZE);
 
-  Coroutine * routine = &schedule.coroutines[schedule.runningCoroutineId];
+  Coroutine * routine = schedule.coroutines[schedule.runningCoroutineId];
   // 更新当前的从协程状态为挂起
   routine->state = Suspend;
   schedule.runningCoroutineId = INVALID_ROUTINE_ID;
@@ -68,7 +68,7 @@ void CoroutineYield(Schedule & schedule) {
 void CoroutineResume(Schedule & schedule, int id) {
   assert(id >= 0 && id < MAX_COROUTINE_SIZE);
 
-  Coroutine * routine = &schedule.coroutines[id];
+  Coroutine * routine = schedule.coroutines[id];
   // 挂起状态的协程调用才生效
   if (routine->state == Suspend) {
     schedule.runningCoroutineId = id;
@@ -80,7 +80,7 @@ void CoroutineResume(Schedule & schedule, int id) {
 
 bool ScheduleRunning(Schedule & schedule) {
   for (int i = 0; i < MAX_COROUTINE_SIZE; i++) {
-    if (schedule.coroutines[i].state != Idle) {
+    if (schedule.coroutines[i]->state != Idle) {
       return true;
     }
   }
