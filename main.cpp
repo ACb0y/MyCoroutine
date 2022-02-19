@@ -20,8 +20,8 @@ int main() {
   int a = 10;
   int b = 10;
   cout << schedule.coroutines.size() << endl;
-  MyCoroutine::CoroutineCreate(&schedule, routine1, &a);
+  MyCoroutine::CoroutineCreate(schedule, routine1, &a);
   cout << "test3" << endl;
-  MyCoroutine::CoroutineCreate(&schedule, routine2, &b);
+  MyCoroutine::CoroutineCreate(schedule, routine2, &b);
   return 0;
 }
