@@ -31,10 +31,13 @@ static void ScheduleCore(Schedule * schedule) {
 int CoroutineCreate(Schedule & schedule, Entry entry, void * arg) {
   int id = 0;
   for (id = 0; id < MAX_COROUTINE_SIZE; id++) {
+    std::cout << "aa" << schedule.coroutines[id] << std::endl;
     if (schedule.coroutines[id]->state == Idle) {
+      std::cout << "bb" << std::endl;
       break;
     }
   }
+  std::cout << "a" << std::endl;
   if (id >= MAX_COROUTINE_SIZE) {
     return INVALID_RUNNING_INDEX;
   }
@@ -42,8 +45,10 @@ int CoroutineCreate(Schedule & schedule, Entry entry, void * arg) {
   Coroutine * routine = schedule.coroutines[id];
   CoroutineInit(schedule, routine, entry, arg);
 
+  std::cout << "b" << std::endl;
   makecontext(&(routine->ctx), (void (*)(void))(ScheduleCore), 1, &schedule);
   // 切换到刚创建的协程中运行
+  std::cout << "c" << std::endl;
   swapcontext(&(schedule.main), &(routine->ctx));
   return id;
 }
@@ -80,34 +85,3 @@ bool ScheduleRunning(Schedule & schedule) {
 }
 
 }
-
-/*
-#ifndef MY_UTHREAD_CPP
-#define MY_UTHREAD_CPP
-
-
-#include "uthread.h"
-//#include <stdio.h>
-
-
-
-void uthread_body(schedule_t *ps)
-{
-    int id = ps->running_thread;
-
-    if(id != -1){
-        uthread_t *t = &(ps->threads[id]);
-
-        t->func(t->arg);
-
-        t->state = FREE;
-
-        ps->running_thread = -1;
-    }
-}
-
-
-
-
-#endif
- */

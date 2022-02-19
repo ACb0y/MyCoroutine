@@ -10,11 +10,12 @@
 
 #include <ucontext.h>
 #include <array>
+#include <iostream>
 
 namespace MyCoroutine {
 
 #define INVALID_RUNNING_INDEX -1
-#define MAX_COROUTINE_SIZE    2048       // 最大创建2048个协程
+#define MAX_COROUTINE_SIZE    10       // 最大创建2048个协程
 #define DEFAULT_STACK_SIZE    100 * 1024 // 100K的调用栈
 
 enum State {
@@ -48,6 +49,7 @@ typedef struct Schedule {
       coroutines[i] = new Coroutine;
       coroutines[i]->state = Idle;
     }
+    std::cout << "test1" << std::endl;
   }
   ~Schedule() {
     for (int i = 0; i < MAX_COROUTINE_SIZE; i++) {
