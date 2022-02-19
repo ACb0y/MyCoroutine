@@ -16,9 +16,12 @@ void routine2(void * arg) {
 
 int main() {
   MyCoroutine::Schedule schedule;
+  int id = 0;
   int a = 10;
   int b = 100;
-  MyCoroutine::CoroutineCreate(schedule, routine1, &a);
-  MyCoroutine::CoroutineCreate(schedule, routine2, &b);
+  id = MyCoroutine::CoroutineCreate(schedule, routine1, &a);
+  cout << "id = " << id << endl;
+  id = MyCoroutine::CoroutineCreate(schedule, routine2, &b);
+  cout << "id = " << id << endl;
   return 0;
 }
