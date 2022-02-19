@@ -6,6 +6,13 @@
 #include "coroutine.h"
 using namespace std;
 
+void routine3(void * arg) {
+  cout << "routine3 run begin" << endl;
+  MyCoroutine::Schedule * schedule = (MyCoroutine::Schedule *)arg;
+  MyCoroutine::CoroutineYield(*schedule);
+  cout << "routine3 run end" << endl;
+}
+
 void routine1(void * arg) {
   cout << "routine1 run begin" << endl;
   MyCoroutine::Schedule * schedule = (MyCoroutine::Schedule *)arg;
@@ -20,14 +27,6 @@ void routine2(void * arg) {
   MyCoroutine::CoroutineYield(*schedule);
   cout << "routine2 run end" << endl;
 }
-
-void routine3(void * arg) {
-  cout << "routine3 run begin" << endl;
-  MyCoroutine::Schedule * schedule = (MyCoroutine::Schedule *)arg;
-  MyCoroutine::CoroutineYield(*schedule);
-  cout << "routine3 run end" << endl;
-}
-
 
 int main() {
   MyCoroutine::Schedule schedule;
