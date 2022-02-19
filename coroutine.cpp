@@ -18,14 +18,14 @@ static void CoroutineInit(Schedule & schedule, Coroutine * routine, Entry entry,
   routine->ctx.uc_link = &(schedule.main);
 }
 
-static void ScheduleCore(Schedule * schedule) {
+static void CoroutineRun(Schedule * schedule) {
   int id = schedule->runningIndex;
   assert(id >= 0 && id < MAX_COROUTINE_SIZE);
   Coroutine * routine = schedule->coroutines[id];
   assert(routine != NULL);
   routine->entry(routine->arg);
   routine->state = Idle;
-  schedule->runningIndex = INVALID_RUNNING_INDEX;
+  schedule->runningIndex = INVALID_RUNNING_INDE;
   // 这个函数执行完，调用栈会回到主协程中
 }
 
@@ -43,7 +43,7 @@ int CoroutineCreate(Schedule & schedule, Entry entry, void * arg) {
   Coroutine * routine = schedule.coroutines[id];
   CoroutineInit(schedule, routine, entry, arg);
 
-  makecontext(&(routine->ctx), (void (*)(void))(ScheduleCore), 1, &schedule);
+  makecontext(&(routine->ctx), (void (*)(void))(CoroutineRun), 1, &schedule);
   // 切换到刚创建的协程中运行
   swapcontext(&(schedule.main), &(routine->ctx));
   return id;
