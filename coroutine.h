@@ -41,7 +41,7 @@ typedef struct Schedule {
   Coroutine coroutines[MAX_COROUTINE_SIZE];
 
   Schedule() {
-    runningIndex = INVALID_RUNNING_INDEX;
+    runningCoroutineId = INVALID_ROUTINE_ID;
     for (int i = 0; i < MAX_COROUTINE_SIZE; i++) {
       coroutines[i].state = Idle;
     }

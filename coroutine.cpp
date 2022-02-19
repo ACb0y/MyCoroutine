@@ -36,7 +36,7 @@ static void CoroutineInit(Schedule & schedule, Coroutine * routine, Entry entry,
 int CoroutineCreate(Schedule & schedule, Entry entry, void * arg) {
   int id = 0;
   for (id = 0; id < MAX_COROUTINE_SIZE; id++) {
-    if (schedule.coroutines[id]->state == Idle) {
+    if (schedule.coroutines[id].state == Idle) {
       break;
     }
   }
@@ -53,7 +53,8 @@ int CoroutineCreate(Schedule & schedule, Entry entry, void * arg) {
 }
 
 void CoroutineYield(Schedule & schedule) {
-  assert(schedule.runningIndex >= 0 && schedule.runningIndex < MAX_COROUTINE_SIZE);
+  int id = schedule->runningCoroutineId;
+  assert(id >= 0 && id < MAX_COROUTINE_SIZE);
 
   Coroutine * routine = &schedule.coroutines[schedule.runningCoroutineId];
   // 更新当前的从协程状态为挂起
@@ -79,7 +80,7 @@ void CoroutineResume(Schedule & schedule, int id) {
 
 bool ScheduleRunning(Schedule & schedule) {
   for (int i = 0; i < MAX_COROUTINE_SIZE; i++) {
-    if (schedule.coroutines[i]->state != Idle) {
+    if (schedule.coroutines[i].state != Idle) {
       return true;
     }
   }
