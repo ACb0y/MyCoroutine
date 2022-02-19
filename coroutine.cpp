@@ -53,7 +53,7 @@ int CoroutineCreate(Schedule & schedule, Entry entry, void * arg) {
 }
 
 void CoroutineYield(Schedule & schedule) {
-  int id = schedule->runningCoroutineId;
+  int id = schedule.runningCoroutineId;
   assert(id >= 0 && id < MAX_COROUTINE_SIZE);
 
   Coroutine * routine = &schedule.coroutines[schedule.runningCoroutineId];
