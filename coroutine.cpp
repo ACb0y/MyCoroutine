@@ -25,7 +25,7 @@ static void CoroutineRun(Schedule * schedule) {
   assert(routine != NULL);
   routine->entry(routine->arg);
   routine->state = Idle;
-  schedule->runningIndex = INVALID_RUNNING_INDE;
+  schedule->runningIndex = INVALID_RUNNING_INDEX;
   // 这个函数执行完，调用栈会回到主协程中
 }
 
