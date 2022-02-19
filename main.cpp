@@ -16,12 +16,7 @@ void routine2(void * arg) {
 
 int main() {
   MyCoroutine::Schedule schedule;
-  cout << "test2" << endl;
-  int a = 10;
-  int b = 10;
-  cout << schedule.coroutines.size() << endl;
   MyCoroutine::CoroutineCreate(schedule, routine1, &a);
-  cout << "test3" << endl;
   MyCoroutine::CoroutineCreate(schedule, routine2, &b);
   return 0;
 }
