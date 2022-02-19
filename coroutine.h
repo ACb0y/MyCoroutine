@@ -40,6 +40,7 @@ typedef struct Schedule {
   Coroutine coroutines[MAX_COROUTINE_SIZE];
 
   Schedule() {
+    std::cout << "test" << std::endl;
     runningCoroutineId = INVALID_ROUTINE_ID;
     std::cout << "test" << std::endl;
     for (int i = 0; i < MAX_COROUTINE_SIZE; i++) {
