@@ -7,8 +7,6 @@
 using namespace std;
 
 void routine1(void * arg) {
-  char temp[13 * 1024] = {0};
-  cout << temp[0] << endl;
   cout << "routine1 run begin" << endl;
   MyCoroutine::Schedule * schedule = (MyCoroutine::Schedule *)arg;
   MyCoroutine::CoroutineYield(*schedule);
