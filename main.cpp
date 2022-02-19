@@ -32,8 +32,7 @@ int main() {
   id2 = MyCoroutine::CoroutineCreate(schedule, routine2, &schedule);
   cout << "id2 = " << id2 << endl;
   while (MyCoroutine::ScheduleRunning(schedule)) {
-    MyCoroutine::CoroutineResume(schedule, id2);
-    MyCoroutine::CoroutineResume(schedule, id1);
+    MyCoroutine::CoroutineResume(schedule);
   }
   return 0;
 }
