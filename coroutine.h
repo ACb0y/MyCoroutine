@@ -9,7 +9,6 @@
 #include <vector>
 #include <iostream>
 
-
 namespace MyCoroutine {
 
 #define INVALID_ROUTINE_ID    -1
@@ -42,7 +41,9 @@ typedef struct Schedule {
 
   Schedule() {
     runningCoroutineId = INVALID_ROUTINE_ID;
+    std::cout << "test" << std::endl;
     for (int i = 0; i < MAX_COROUTINE_SIZE; i++) {
+      std::cout << "a" << std::endl;
       coroutines[i].state = Idle;
     }
   }
