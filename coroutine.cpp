@@ -106,6 +106,7 @@ int ScheduleInit(Schedule & schedule, int coroutineCnt) {
     schedule.coroutines[i] = new Coroutine;
     schedule.coroutines[i]->state = Idle;
   }
+  return 0;
 }
 
 bool ScheduleRunning(Schedule & schedule) {
