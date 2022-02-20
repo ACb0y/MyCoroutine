@@ -10,7 +10,7 @@ namespace MyCoroutine {
 
 static void CoroutineRun(Schedule * schedule) {
   int id = schedule->runningCoroutineId;
-  assert(id >= 0 && id < schedule.coroutineCnt);
+  assert(id >= 0 && id < schedule->coroutineCnt);
 
   Coroutine * routine = schedule->coroutines[id];
   // 执行entry函数
