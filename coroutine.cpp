@@ -79,7 +79,6 @@ void CoroutineResume(Schedule & schedule, int id) {
           schedule.coroutines[i]->priority < priority) {
         coroutineId = i;
         priority = schedule.coroutines[i]->priority;
-        break;
       }
     }
   }
