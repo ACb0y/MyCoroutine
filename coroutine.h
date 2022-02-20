@@ -42,6 +42,7 @@ typedef struct Schedule {
   ucontext_t main;                            // 用于保存主协程的上下文
   int32_t runningCoroutineId;                 // 运行中（Run + Suspend）的从协程的id
   Coroutine * coroutines[MAX_COROUTINE_SIZE]; // 从协程数组池
+  int32_t coroutineCnt;                       // 协程个数
 }Schedule;
 
 // 创建协程并运行，只能在主协程中调用

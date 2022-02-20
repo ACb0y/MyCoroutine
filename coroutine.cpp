@@ -10,7 +10,7 @@ namespace MyCoroutine {
 
 static void CoroutineRun(Schedule * schedule) {
   int id = schedule->runningCoroutineId;
-  assert(id >= 0 && id < MAX_COROUTINE_SIZE);
+  assert(id >= 0 && id < schedule.coroutineCnt);
 
   Coroutine * routine = schedule->coroutines[id];
   // 执行entry函数
@@ -40,12 +40,12 @@ static void CoroutineInit(Schedule & schedule, Coroutine * routine, Entry entry,
 
 int CoroutineCreate(Schedule & schedule, Entry entry, void * arg, uint32_t priority) {
   int id = 0;
-  for (id = 0; id < MAX_COROUTINE_SIZE; id++) {
+  for (id = 0; id < schedule.coroutineCnt; id++) {
     if (schedule.coroutines[id]->state == Idle) {
       break;
     }
   }
-  if (id >= MAX_COROUTINE_SIZE) {
+  if (id >= schedule.coroutineCnt) {
     return INVALID_ROUTINE_ID;
   }
   schedule.runningCoroutineId = id;
@@ -59,7 +59,7 @@ int CoroutineCreate(Schedule & schedule, Entry entry, void * arg, uint32_t prior
 
 void CoroutineYield(Schedule & schedule) {
   int id = schedule.runningCoroutineId;
-  assert(id >= 0 && id < MAX_COROUTINE_SIZE);
+  assert(id >= 0 && id < schedule.coroutineCnt);
 
   Coroutine * routine = schedule.coroutines[schedule.runningCoroutineId];
   // 更新当前的从协程状态为挂起
@@ -74,7 +74,7 @@ void CoroutineResume(Schedule & schedule, int id) {
   uint32_t priority = UINT32_MAX;
   // id为无效的协程id时，按优先级调度，选择优先级最高的从协程来运行
   if (id == INVALID_ROUTINE_ID) {
-    for (int i = 0; i < MAX_COROUTINE_SIZE; i++) {
+    for (int i = 0; i < schedule.coroutineCnt; i++) {
       if (schedule.coroutines[i]->state == Suspend &&
           schedule.coroutines[i]->priority < priority) {
         coroutineId = i;
@@ -83,7 +83,7 @@ void CoroutineResume(Schedule & schedule, int id) {
       }
     }
   }
-  assert(coroutineId >= 0 && coroutineId < MAX_COROUTINE_SIZE);
+  assert(coroutineId >= 0 && coroutineId < schedule.coroutineCnt);
 
   Coroutine * routine = schedule.coroutines[coroutineId];
   // 挂起状态的协程调用才生效
@@ -102,6 +102,7 @@ int ScheduleInit(Schedule & schedule, int coroutineCnt) {
     coroutineCnt = MAX_COROUTINE_SIZE;
   }
   schedule.runningCoroutineId = INVALID_ROUTINE_ID;
+  schedule.coroutineCnt = coroutineCnt;
   for (int i = 0; i < coroutineCnt; i++) {
     schedule.coroutines[i] = new Coroutine;
     schedule.coroutines[i]->state = Idle;
@@ -113,7 +114,7 @@ bool ScheduleRunning(Schedule & schedule) {
   if (schedule.runningCoroutineId != INVALID_ROUTINE_ID) {
     return true;
   }
-  for (int i = 0; i < MAX_COROUTINE_SIZE; i++) {
+  for (int i = 0; i < schedule.coroutineCnt; i++) {
     if (schedule.coroutines[i]->state != Idle) {
       return true;
     }
