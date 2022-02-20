@@ -26,10 +26,11 @@ void routine2(void * arg) {
 
 int main() {
   MyCoroutine::Schedule schedule;
+  MyCoroutine::ScheduleInit(schedule, 100);
   int id1 = 0, id2 = 0;
-  id1 = MyCoroutine::CoroutineCreate(schedule, routine1, &schedule);
+  id1 = MyCoroutine::CoroutineCreate(schedule, routine1, &schedule, 2);
   cout << "id1 = " << id1 << endl;
-  id2 = MyCoroutine::CoroutineCreate(schedule, routine2, &schedule);
+  id2 = MyCoroutine::CoroutineCreate(schedule, routine2, &schedule, 1);
   cout << "id2 = " << id2 << endl;
   while (MyCoroutine::ScheduleRunning(schedule)) {
     MyCoroutine::CoroutineResume(schedule);

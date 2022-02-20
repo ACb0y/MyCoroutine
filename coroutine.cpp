@@ -15,16 +15,17 @@ static void CoroutineRun(Schedule * schedule) {
   Coroutine * routine = schedule->coroutines[id];
   // 执行entry函数
   routine->entry(routine->arg);
-  // entry函数执行完之后，才能把协程状态更新为idle，并标记
+  // entry函数执行完之后，才能把协程状态更新为idle，并标记runningCoroutineId为无效的id
   routine->state = Idle;
   schedule->runningCoroutineId = INVALID_ROUTINE_ID;
   // 这个函数执行完，调用栈会回到主协程中，执行routine->ctx.uc_link指向的上下文的下一条指令
 }
 
-static void CoroutineInit(Schedule & schedule, Coroutine * routine, Entry entry, void * arg) {
+static void CoroutineInit(Schedule & schedule, Coroutine * routine, Entry entry, void * arg, uint32_t priority) {
   routine->arg = arg;
   routine->entry = entry;
   routine->state = Run;
+  routine->priority = priority;
   getcontext(&(routine->ctx));
   routine->ctx.uc_stack.ss_flags = 0;
   routine->ctx.uc_stack.ss_sp = routine->stack;
@@ -37,7 +38,7 @@ static void CoroutineInit(Schedule & schedule, Coroutine * routine, Entry entry,
   makecontext(&(routine->ctx), (void (*)(void))(CoroutineRun), 1, &schedule);
 }
 
-int CoroutineCreate(Schedule & schedule, Entry entry, void * arg) {
+int CoroutineCreate(Schedule & schedule, Entry entry, void * arg, uint32_t priority) {
   int id = 0;
   for (id = 0; id < MAX_COROUTINE_SIZE; id++) {
     if (schedule.coroutines[id]->state == Idle) {
@@ -49,7 +50,7 @@ int CoroutineCreate(Schedule & schedule, Entry entry, void * arg) {
   }
   schedule.runningCoroutineId = id;
   Coroutine * routine = schedule.coroutines[id];
-  CoroutineInit(schedule, routine, entry, arg);
+  CoroutineInit(schedule, routine, entry, arg, priority);
   // 切换到刚创建的协程中运行，并把当前执行上下文保持到schedule.main中，
   // 当从协程执行结束或者从协程主动yield时，swapcontext才会返回。
   swapcontext(&(schedule.main), &(routine->ctx));
@@ -70,11 +71,14 @@ void CoroutineYield(Schedule & schedule) {
 
 void CoroutineResume(Schedule & schedule, int id) {
   int coroutineId = id;
-  // 按优先级调度，默认按照创建的先后顺序来调度
+  uint32_t priority = UINT32_MAX;
+  // id为无效的协程id时，按优先级调度，选择优先级最高的从协程来运行
   if (id == INVALID_ROUTINE_ID) {
     for (int i = 0; i < MAX_COROUTINE_SIZE; i++) {
-      if (schedule.coroutines[i]->state == Suspend) {
+      if (schedule.coroutines[i]->state == Suspend &&
+          schedule.coroutines[i]->priority < priority) {
         coroutineId = i;
+        priority = schedule.coroutines[i]->priority;
         break;
       }
     }
@@ -89,6 +93,18 @@ void CoroutineResume(Schedule & schedule, int id) {
     // 从主协程切换到协程编号为id的协程中执行，并把当前执行上下文保存到schedule.main中，
     // 当从协程执行结束或者从协程主动yield时，swapcontext才会返回。
     swapcontext(&schedule.main, &routine->ctx);
+  }
+}
+
+int ScheduleInit(Schedule & schedule, int coroutineCnt) {
+  // 最多创建MAX_COROUTINE_SIZE个协程
+  if (coroutineCnt > MAX_COROUTINE_SIZE) {
+    coroutineCnt = MAX_COROUTINE_SIZE;
+  }
+  schedule.runningCoroutineId = INVALID_ROUTINE_ID;
+  for (int i = 0; i < coroutineCnt; i++) {
+    schedule.coroutines[i] = new Coroutine;
+    schedule.coroutines[i]->state = Idle;
   }
 }
 
