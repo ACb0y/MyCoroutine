@@ -128,7 +128,7 @@ endif
 endif
 
 clean:
-	$(RM) $(OBJS) $(TRAGET)
+	$(RM) $(OBJS) $(TARGET)
 #======================== 固定设置部分 结束 ========================#
 
 help:
