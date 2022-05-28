@@ -78,7 +78,7 @@ static void SaveCoroutineStack(Coroutine* routine, uint8_t* stack_top) {
 
 static void RestoreCoroutineStack(Schedule& schedule, Coroutine* routine) {
   // 从栈顶的起始地址，还原协程栈的内容
-  memcpy(schedule.stack + SHARE_STACK_SIZE - routine->stackSize, routine->stack, routine->stackSizes);
+  memcpy(schedule.stack + SHARE_STACK_SIZE - routine->stackSize, routine->stack, routine->stackSize);
 }
 
 int CoroutineCreate(Schedule& schedule, Entry entry, void* arg, uint32_t priority) {
@@ -120,7 +120,7 @@ void CoroutineYield(Schedule& schedule) {
 }
 
 int CoroutineResume(Schedule& schedule) {
-  assert(schedule.isMaterCoroutine);
+  assert(schedule.isMasterCoroutine);
   int coroutineId = INVALID_ROUTINE_ID;
   uint32_t priority = UINT32_MAX;
   // 按优先级调度，选择优先级最高的状态为挂起的从协程来运行
@@ -147,16 +147,16 @@ int CoroutineResume(Schedule& schedule) {
 }
 
 int CoroutineResumeById(Schedule& schedule, int id) {
-  assert(schedule.isMaterCoroutine);
+  assert(schedule.isMasterCoroutine);
   assert(id >= 0 && id < schedule.coroutineCnt);
 
-  Coroutine* routine = schedule.coroutines[coroutineId];
+  Coroutine* routine = schedule.coroutines[id];
   // 挂起状态的协程调用才生效
   if (routine->state != Suspend) {
     return NotSuspend;
   }
   routine->state = Run;
-  schedule.runningCoroutineId = coroutineId;
+  schedule.runningCoroutineId = id;
   RestoreCoroutineStack(schedule, routine);
   // 从主协程切换到协程编号为id的协程中执行，并把当前执行上下文保存到schedule.main中，
   // 当从协程执行结束或者从协程主动yield时，swapcontext才会返回。
