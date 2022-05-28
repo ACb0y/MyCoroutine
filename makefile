@@ -17,7 +17,7 @@ endif
 CFLAGS = -g -Wall -Werror -pipe
 
 # c++编译选项
-CXXFLAGS = -g -Wall -Werror -pipe
+CXXFLAGS = -g -Wall -Werror -pipe -std=c++0x
 
 # 连接选项
 LDFLAGS =
