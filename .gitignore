@@ -31,3 +31,4 @@
 *.out
 *.app
 MyCoroutine
+coroutine_test
