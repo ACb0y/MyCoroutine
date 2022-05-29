@@ -26,10 +26,10 @@ LDFLAGS =
 INCFLAGS =
 
 # 源文件目录
-SRCDIRS = . ../coroutine.cpp
+SRCDIRS = .
 
 # 单独的源文件
-ALONE_SOURCES =
+ALONE_SOURCES = ../coroutine.cpp
 #======================== 自定义设置部分 结束 ========================#
 
 #======================== 固定设置部分 开始 ========================#
