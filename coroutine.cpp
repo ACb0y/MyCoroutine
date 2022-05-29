@@ -191,4 +191,14 @@ bool ScheduleRunning(Schedule& schedule) {
   return false;
 }
 
+void ScheduleClean(Schedule& schedule) {
+  assert(schedule.isMasterCoroutine);
+  if (schedule.runningCoroutineId != INVALID_ROUTINE_ID) {
+    return true;
+  }
+  for (int i = 0; i < schedule.coroutineCnt; i++) {
+    delete schedule.coroutines[i];
+  }
+}
+
 }  // namespace MyCoroutine

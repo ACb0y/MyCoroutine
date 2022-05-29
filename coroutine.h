@@ -77,5 +77,7 @@ int CoroutineResumeById(Schedule& schedule, int id);
 int ScheduleInit(Schedule& schedule, int coroutineCnt);
 // 判断是否还有协程在运行
 bool ScheduleRunning(Schedule& schedule);
+// 释放调度器
+void ScheduleClean(Schedule& schedule);
 
 }  // namespace MyCoroutine
