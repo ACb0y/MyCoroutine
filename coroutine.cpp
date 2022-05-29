@@ -29,9 +29,6 @@ static void CoroutineInit(Schedule& schedule, Coroutine* routine, Entry entry, v
   routine->entry = entry;
   routine->state = Run;
   routine->priority = priority;
-  routine->stack = NULL;
-  routine->stackCap = 0;
-  routine->stackSize = 0;
   getcontext(&(routine->ctx));
   routine->ctx.uc_stack.ss_flags = 0;
   routine->ctx.uc_stack.ss_sp = routine->stack;
