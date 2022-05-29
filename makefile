@@ -17,7 +17,7 @@ endif
 CFLAGS = -g -Wall -Werror -pipe
 
 # c++编译选项
-CXXFLAGS = -g -Wall -Werror -pipe -std=c++11 -fsanitize=address -fno-omit-frame-pointer
+CXXFLAGS = -g -Wall -Werror -pipe -std=c++11
 
 # 连接选项
 LDFLAGS =
