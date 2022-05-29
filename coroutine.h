@@ -13,8 +13,8 @@
 namespace MyCoroutine {
 
 #define INVALID_ROUTINE_ID -1
-#define MAX_COROUTINE_SIZE 1024           // 最多创建1024个协程
-#define SHARE_STACK_SIZE 4 * 1024 * 1024  // 4M的共享调用栈，linux进程默认的调用栈大小为8M
+#define MAX_COROUTINE_SIZE 1024  // 最多创建1024个协程
+#define STACK_SIZE 64 * 1024     // 64k的协程栈
 
 /* 协程的状态，协程的状态转移如下：
  * idle->run
@@ -39,19 +39,12 @@ typedef void (*Entry)(void* arg);
 
 // 协程结构体
 typedef struct Coroutine {
-  State state;        // 协程当前的状态
-  uint32_t priority;  // 协程优先级，值越小，优先级越高
-  void* arg;          // 协程入口函数的参数
-  Entry entry;        // 协程入口函数
-  ucontext_t ctx;     // 协程执行上下文
-  /*
-   * 运行时的动态协程栈，动态扩缩容；
-   * 在协程被挂起时，用于保存协程的调用栈；
-   * 在协程被唤醒时，内存会被拷贝到共享调用栈中。
-   */
-  uint8_t* stack;
-  uint32_t stackSize;  // 动态协程栈使用的大小
-  uint32_t stackCap;   // 动态协程栈的容量大小 stackCap >= stackSize
+  State state;                // 协程当前的状态
+  uint32_t priority;          // 协程优先级，值越小，优先级越高
+  void* arg;                  // 协程入口函数的参数
+  Entry entry;                // 协程入口函数
+  ucontext_t ctx;             // 协程执行上下文
+  uint8_t stack[STACK_SIZE];  // 每个协程独占的协程栈
 } Coroutine;
 
 // 协程调度器
@@ -61,7 +54,6 @@ typedef struct Schedule {
   int32_t coroutineCnt;                       // 协程个数
   bool isMasterCoroutine;                     // 当前协程是否为主协程
   Coroutine* coroutines[MAX_COROUTINE_SIZE];  // 从协程数组池
-  uint8_t stack[SHARE_STACK_SIZE];            // 从协程的共享栈
 } Schedule;
 
 // 创建协程并运行，只能在主协程中调用
