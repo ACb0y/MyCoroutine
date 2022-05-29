@@ -3,21 +3,22 @@
 //
 
 #include <iostream>
+
 #include "coroutine.h"
 using namespace std;
 
-void routine1(void * arg) {
+void routine1(void *arg) {
   cout << "routine1 run begin" << endl;
-  MyCoroutine::Schedule * schedule = (MyCoroutine::Schedule *)arg;
+  MyCoroutine::Schedule *schedule = (MyCoroutine::Schedule *)arg;
   MyCoroutine::CoroutineYield(*schedule);
   cout << "routine1 running" << endl;
   MyCoroutine::CoroutineYield(*schedule);
   cout << "routine1 run end" << endl;
 }
 
-void routine2(void * arg) {
+void routine2(void *arg) {
   cout << "routine2 run begin" << endl;
-  MyCoroutine::Schedule * schedule = (MyCoroutine::Schedule *)arg;
+  MyCoroutine::Schedule *schedule = (MyCoroutine::Schedule *)arg;
   MyCoroutine::CoroutineYield(*schedule);
   cout << "routine2 running" << endl;
   MyCoroutine::CoroutineYield(*schedule);
@@ -35,5 +36,6 @@ int main() {
   while (MyCoroutine::ScheduleRunning(schedule)) {
     MyCoroutine::CoroutineResume(schedule);
   }
+  MyCoroutine::ScheduleClean(schedule);
   return 0;
 }
