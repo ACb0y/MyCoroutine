@@ -1,5 +1,5 @@
 #======================== 编译目标 开始 ========================#
-TARGET = 
+TARGET = coroutine_test
 
 # 目标为可执行程序
 ifdef EXEC_TARGET
