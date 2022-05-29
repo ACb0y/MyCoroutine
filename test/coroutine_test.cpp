@@ -23,7 +23,7 @@ TEST_CASE(ScheduleClean) {
 
 void fun1(void *arg) {
   MyCoroutine::Schedule *schedule = (MyCoroutine::Schedule *)arg;
-  MyCoroutine::CoroutineYield(schedule);
+  MyCoroutine::CoroutineYield(*schedule);
 }
 
 TEST_CASE(ScheduleRunning) {
