@@ -17,21 +17,22 @@ namespace MyCoroutine {
 #define STACK_SIZE 64 * 1024     // 64k的协程栈
 
 /* 协程的状态，协程的状态转移如下：
- * idle->run
+ * idle->ready
+ * ready->run
  * run->suspend
  * suspend->run
  * run->ide
  */
 enum State {
   Idle = 1,     // 空闲
-  Run = 2,      // 运行
-  Suspend = 3,  // 挂起
+  Ready = 2,    // 就绪
+  Run = 3,      // 运行
+  Suspend = 4,  // 挂起
 };
 
 enum ResumeResult {
-  InvalidId = 1,   // 无效的协程id
-  NotSuspend = 2,  // 无挂起状态的协程
-  Success = 3,     // 成功唤醒一个挂起状态的协程
+  NotRunnable = 1,  // 无可运行的协程
+  Success = 2,      // 成功唤醒一个挂起状态的协程
 };
 
 // 协程入口函数
@@ -56,7 +57,7 @@ typedef struct Schedule {
   Coroutine* coroutines[MAX_COROUTINE_SIZE];  // 从协程数组池
 } Schedule;
 
-// 创建协程并运行，只能在主协程中调用
+// 创建协程，只能在主协程中调用
 int CoroutineCreate(Schedule& schedule, Entry entry, void* arg, uint32_t priority = 0);
 // 让出执行权，只能在从协程中调用
 void CoroutineYield(Schedule& schedule);

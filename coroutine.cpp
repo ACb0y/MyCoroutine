@@ -27,7 +27,7 @@ static void CoroutineRun(Schedule* schedule) {
 static void CoroutineInit(Schedule& schedule, Coroutine* routine, Entry entry, void* arg, uint32_t priority) {
   routine->arg = arg;
   routine->entry = entry;
-  routine->state = Run;
+  routine->state = Ready;
   routine->priority = priority;
   getcontext(&(routine->ctx));
   routine->ctx.uc_stack.ss_flags = 0;
@@ -56,10 +56,6 @@ int CoroutineCreate(Schedule& schedule, Entry entry, void* arg, uint32_t priorit
   schedule.runningCoroutineId = id;
   Coroutine* routine = schedule.coroutines[id];
   CoroutineInit(schedule, routine, entry, arg, priority);
-  // 切换到刚创建的协程中运行，并把当前执行上下文保存到schedule.main中，
-  // 当从协程执行结束或者从协程主动yield时，swapcontext才会返回。
-  swapcontext(&(schedule.main), &(routine->ctx));
-  schedule.isMasterCoroutine = true;
   return id;
 }
 
@@ -83,14 +79,15 @@ int CoroutineResume(Schedule& schedule) {
   uint32_t priority = UINT32_MAX;
   // 按优先级调度，选择优先级最高的状态为挂起的从协程来运行
   for (int i = 0; i < schedule.coroutineCnt; i++) {
-    if (schedule.coroutines[i]->state == Suspend && schedule.coroutines[i]->priority < priority) {
+    if ((schedule.coroutines[i]->state == Suspend || schedule.coroutines[i]->state == Ready) &&
+        schedule.coroutines[i]->priority < priority) {
       coroutineId = i;
       priority = schedule.coroutines[i]->priority;
     }
   }
 
   if (coroutineId == INVALID_ROUTINE_ID) {
-    return InvalidId;
+    return NotRunnable;
   }
 
   Coroutine* routine = schedule.coroutines[coroutineId];
@@ -108,9 +105,9 @@ int CoroutineResumeById(Schedule& schedule, int id) {
   assert(id >= 0 && id < schedule.coroutineCnt);
 
   Coroutine* routine = schedule.coroutines[id];
-  // 挂起状态的协程调用才生效
-  if (routine->state != Suspend) {
-    return NotSuspend;
+  // 挂起状态或者就绪状态的的协程才可以唤醒
+  if (routine->state != Suspend && routine->state != Ready) {
+    return NotRunnable;
   }
   routine->state = Run;
   schedule.runningCoroutineId = id;

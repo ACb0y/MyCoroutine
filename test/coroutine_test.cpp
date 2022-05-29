@@ -38,7 +38,23 @@ TEST_CASE(ScheduleRunning) {
   ASSERT_EQ(id, 0);
   ASSERT_TRUE(MyCoroutine::ScheduleRunning(schedule));
   ASSERT_EQ(MyCoroutine::CoroutineResumeById(schedule, id), MyCoroutine::Success);
-  ASSERT_FALSE(MyCoroutine::ScheduleRunning(schedule));
+  ASSERT_TRUE(MyCoroutine::ScheduleRunning(schedule));
+  ASSERT_EQ(MyCoroutine::CoroutineResumeById(schedule, id), MyCoroutine::Success);
+  MyCoroutine::ScheduleClean(schedule);
+}
+
+TEST_CASE(CoroutineCreate) {
+  MyCoroutine::Schedule schedule;
+  ASSERT_EQ(MyCoroutine::ScheduleInit(schedule, 1), 0);
+  int id = MyCoroutine::CoroutineCreate(schedule, fun1, (void *)&schedule);
+  ASSERT_EQ(id, 0);
+  id = MyCoroutine::CoroutineCreate(schedule, fun1, (void *)&schedule);
+  ASSERT_EQ(id, INVALID_ROUTINE_ID);
+  while (MyCoroutine::ScheduleRunning(schedule)) {
+    ASSERT_EQ(MyCoroutine::CoroutineResume(schedule), MyCoroutine::Success);
+  }
+  id = MyCoroutine::CoroutineCreate(schedule, fun1, (void *)&schedule);
+  ASSERT_EQ(id, 0);
   MyCoroutine::ScheduleClean(schedule);
 }
 
@@ -50,7 +66,8 @@ TEST_CASE(CoroutineResume_Success) {
   ASSERT_EQ(id, 0);
   ASSERT_TRUE(MyCoroutine::ScheduleRunning(schedule));
   ASSERT_EQ(MyCoroutine::CoroutineResume(schedule), MyCoroutine::Success);
-  ASSERT_FALSE(MyCoroutine::ScheduleRunning(schedule));
+  ASSERT_TRUE(MyCoroutine::ScheduleRunning(schedule));
+  ASSERT_EQ(MyCoroutine::CoroutineResumeById(schedule, id), MyCoroutine::Success);
   MyCoroutine::ScheduleClean(schedule);
 }
 
@@ -58,7 +75,7 @@ TEST_CASE(CoroutineResume_InvalidId) {
   MyCoroutine::Schedule schedule;
   ASSERT_EQ(MyCoroutine::ScheduleInit(schedule, 100), 0);
   ASSERT_FALSE(MyCoroutine::ScheduleRunning(schedule));
-  ASSERT_EQ(MyCoroutine::CoroutineResume(schedule), MyCoroutine::InvalidId);
+  ASSERT_EQ(MyCoroutine::CoroutineResume(schedule), MyCoroutine::NotRunnable);
   MyCoroutine::ScheduleClean(schedule);
 }
 
@@ -70,8 +87,8 @@ TEST_CASE(CoroutineResumeById_SuccessAndNotSuspend) {
   ASSERT_EQ(id, 0);
   ASSERT_TRUE(MyCoroutine::ScheduleRunning(schedule));
   ASSERT_EQ(MyCoroutine::CoroutineResumeById(schedule, 0), MyCoroutine::Success);
-  ASSERT_FALSE(MyCoroutine::ScheduleRunning(schedule));
-  ASSERT_EQ(MyCoroutine::CoroutineResumeById(schedule, 0), MyCoroutine::NotSuspend);
+  ASSERT_TRUE(MyCoroutine::ScheduleRunning(schedule));
+  ASSERT_EQ(MyCoroutine::CoroutineResumeById(schedule, 0), MyCoroutine::Success);
   MyCoroutine::ScheduleClean(schedule);
 }
 
